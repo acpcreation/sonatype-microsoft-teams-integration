@@ -35,7 +35,7 @@ If everything has been set up correctly, we will be able to run the service and 
 Configure the `.env` file to include:
 ```
 - TEAMS_URL=https://sonatype.webhook.office.com/webhookb2/...
-- PORT=3000
+- NODEPORT=3000
 - IQ_URL=http://localhost:8070/
 ```
 

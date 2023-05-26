@@ -110,7 +110,6 @@ function processIqData(e) {
     //     formatLicenseManagementMSTeams(e)
     // }
 
-    // TBD: Security Vulnerability Override Management
 }
 
 async function formatAppEvaluationMSTeamsNotification(e) {
@@ -190,21 +189,17 @@ function capitalizeFirstLetter(e){
 /*****************/
 // Sender
 /*****************/
-// let stuff = getSourceControlfromIQ("27bef00933704a4b97332482f216a02c")
-// console.log(stuff)
 async function getSourceControlfromIQ(e){
     let url = IQ_URL+"api/v2/sourceControl/application/"+e
     let scmURL = ""
     let scmName = "Source Control"
-
   
     const token = `${IQ_USER}:${IQ_PASS}`;
     const encodedToken = Buffer.from(token).toString('base64');
-    console.log(encodedToken)
+    // console.log(encodedToken)
     
     let config = {
         method: 'get',
-        // maxBodyLength: Infinity,
         url: url,
         headers: { 
             'Authorization': 'Basic '+encodedToken
@@ -213,9 +208,8 @@ async function getSourceControlfromIQ(e){
       
     await axios.request(config).then((response) => {
         // console.log(JSON.stringify(response.data));
-        
         scmURL = response.data.repositoryUrl
-        console.log(scmURL)
+        console.log("SCM"+scmURL)
 
         scmName = "Source Control"
         if(scmURL.includes("azure")){
@@ -232,14 +226,12 @@ async function getSourceControlfromIQ(e){
         console.log(error);
         scmURL = IQ_URL
         scmName = "SOURCE CONTROL NOT FOUND"
-
     });
 
     return {
         url: scmURL,
         name: scmName
     }
-
 }
 
 function sendMSTeamsMessage(e) {
