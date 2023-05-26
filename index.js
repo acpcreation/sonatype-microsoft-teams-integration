@@ -107,7 +107,6 @@ function processIqData(e) {
     //     formatLicenseManagementMSTeams(e)
     // }
 
-    // TBD: Security Vulnerability Override Management
 }
 
 function formatAppEvaluationMSTeamsNotification(e) {
