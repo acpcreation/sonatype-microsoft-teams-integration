@@ -61,7 +61,7 @@ app.get('/test', function (req, res) {
         "id": "d5cc2e91d6454545841da5599d3c7156",
         "applicationEvaluation": {
             "application": {
-                "id": "0f256982c80b4e13abef4917b93ac343",
+                "id": "27bef00933704a4b97332482f216a02c",
                 "publicId": "My-Application-ID",
                 "name": "App Name",
                 "organizationId": "f25acda2a413ab2c62b44917b93ac232"
@@ -78,6 +78,7 @@ app.get('/test', function (req, res) {
             "reportId": "36f37cf776dd408bacd063450ab04f71"
         }
     }
+
     processIqData(payload)
 });
 
@@ -93,9 +94,9 @@ function processIqData(e) {
     }
 
     // Violation alert (detailed app data)
-    if (e.hasOwnProperty("policyAlerts")) {
-        formatViolationAlertMSTeamsNotification(e)
-    }
+    // if (e.hasOwnProperty("policyAlerts")) {
+    //     formatViolationAlertMSTeamsNotification(e)
+    // }
 
     // Policy Management
     // if (e.hasOwnProperty("type") && e.type == "POLICY") {
@@ -110,7 +111,7 @@ function processIqData(e) {
     // TBD: Security Vulnerability Override Management
 }
 
-function formatAppEvaluationMSTeamsNotification(e) {
+async function formatAppEvaluationMSTeamsNotification(e) {
     let scanURL = IQ_URL + "assets/index.html#/applicationReport/" + e.applicationEvaluation.application.publicId + "/" + e.applicationEvaluation.reportId + "/policy"
     console.log(scanURL)
 
@@ -122,6 +123,10 @@ function formatAppEvaluationMSTeamsNotification(e) {
             color = "4959b6"
         }
     }
+
+    // Get SCM from IQ
+    let scm = await getSourceControlfromIQ(e.applicationEvaluation.application.id)
+    // console.log(scm)
         
     // Format message
     let msTeamsMsg = {
@@ -156,10 +161,17 @@ function formatAppEvaluationMSTeamsNotification(e) {
         }],
         "potentialAction": [ {
             "@type": "OpenUri",
-            "name": "View Report",
+            "name": "View in Sonatype IQ",
             "targets": [{
                 "os": "default",
                 "uri": scanURL
+            }]
+        },{
+            "@type": "OpenUri",
+            "name": "View in "+scm.name,
+            "targets": [{
+                "os": "default",
+                "uri": scm.url
             }]
         }]
     }
@@ -282,6 +294,53 @@ function capitalizeFirstLetter(e){
 /*****************/
 // Sender
 /*****************/
+// let stuff = getSourceControlfromIQ("27bef00933704a4b97332482f216a02c")
+// console.log(stuff)
+async function getSourceControlfromIQ(e){
+    let url = IQ_URL+"api/v2/sourceControl/application/"+e
+    let scmURL = ""
+    let scmName = "Source Control"
+    
+    let config = {
+        method: 'get',
+        // maxBodyLength: Infinity,
+        url: url,
+        headers: { 
+            'Authorization': 'Basic YWRtaW46YWRtaW4hMjM='
+        }
+    };
+      
+    await axios.request(config).then((response) => {
+        // console.log(JSON.stringify(response.data));
+        
+        scmURL = response.data.repositoryUrl
+        console.log(scmURL)
+
+        scmName = "Source Control"
+        if(scmURL.includes("azure")){
+            scmName = "Azure DevOps"
+        }else if(scmURL.includes("github")){
+            scmName = "GitHub"
+        }else if(scmURL.includes("gitlab")){
+            scmName = "GitLab"
+        }else if(scmURL.includes("bitbucket")){
+            scmName = "BitBucket"
+        }
+
+    }).catch((error) => {
+        console.log(error);
+        scmURL = IQ_URL
+        scmName = "SOURCE CONTROL NOT FOUND"
+
+    });
+
+    return {
+        url: scmURL,
+        name: scmName
+    }
+
+}
+
 function sendMSTeamsMessage(e) {
     var url = TEAMS_URL
     var sendData = JSON.stringify(e);
