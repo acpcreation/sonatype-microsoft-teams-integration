@@ -34,8 +34,10 @@ app.use(express.json());
 /*****************/
 // ENVIRONMENT VARIABLES
 TEAMS_URL = process.env.TEAMS_URL // "https://sonatype.webhook.office.com/webhookb2/..."
-PORT = process.env.PORT // 3000
-IQ_URL = process.env.IQ_URL // "http://localhost:8070/"
+PORT  = process.env.NODEPORT      // 3000
+IQ_URL  = process.env.IQ_URL      // "http://localhost:8070/"
+IQ_USER = process.env.IQ_USERNAME // "admin"
+IQ_PASS = process.env.IQ_PASSWORD // "admin123"
 /*****************/
 
 
@@ -179,112 +181,6 @@ async function formatAppEvaluationMSTeamsNotification(e) {
     sendMSTeamsMessage(msTeamsMsg)
 }
 
-function formatViolationAlertMSTeamsNotification(e) {
-    let scanURL = IQ_URL + "assets/index.html#/applicationReport/" + e.application.publicId + "/" + e.applicationEvaluation.reportId + "/policy"
-    console.log(scanURL)
-
-    // Reformat message
-    let violationJSON = []
-    e.policyAlerts = e.policyAlerts.reverse();
-    for(let i in e.policyAlerts) {
-        // console.log(e.policyAlerts[i])
-        let p = e.policyAlerts[i]
-        let violation = p.policyName+" ("+p.threatLevel+")"
-
-        if (p.threatLevel >=9){
-            violation = ":bangbang: "+violation
-        }
-        if (p.threatLevel <9 && p.threatLevel >=7){
-            violation = ":warning: "+violation
-        }
-        
-        for(let j in p.componentFacts){
-            let pj = p.componentFacts[j]
-            let displayName = pj.displayName.replaceAll(' ', '')
-
-            let description = ""
-            // for(let k in pj.constraintFacts){
-            //     for(let l in pj.constraintFacts[k].satisfiedConditions){
-            //         description+= ""+violation+" : "+pj.constraintFacts[k].satisfiedConditions[l].reason+"\n"
-            //     }
-            // }
-
-            found = false
-            for(let m in violationJSON){
-                if (displayName == violationJSON[m].name){
-                    // violationJSON[m].details += description
-                    found = true
-                    break;
-                }
-            }
-
-            if (found==false){
-                violationJSON.push({
-                    name:displayName,
-                    details:violation
-                })
-            }
-        }
-    }
-    
-    let violationDetails = ""
-    for(let i in violationJSON){
-        violationDetails+="\n• "+violationJSON[i].details+" | "+violationJSON[i].name
-    }
-
-    let msTeamsMsg = {
-        "channel": "iq",
-        "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "New Security Violation(s) found for "+ e.application.name+" with Sonatype Continuous Monitoring",
-                }
-            }, {
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": "*Application Evaluation Report*\n"+
-                                "\t*• Affected Components:*\t"+e.applicationEvaluation.affectedComponentCount+"\n"+
-                                "\t*• Critical Components:*\t"+e.applicationEvaluation.criticalComponentCount+" \n"+
-                                "\t*• Severe Components:  *\t"+e.applicationEvaluation.severeComponentCount+" \n"+
-                                "\t*• Moderate Components:*\t"+e.applicationEvaluation.moderateComponentCount+"\n"+
-                                "*Stage:* "+e.applicationEvaluation.stage+"\n"+
-                                "*Outcome:* "+e.applicationEvaluation.outcome+"\n"
-                    },
-                ]
-            }, 
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "plain_text",
-                        "text": violationDetails,
-                        "emoji": true
-                    }
-                ]
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "View Report"
-                        },
-                        "style": "primary",
-                        "url": scanURL
-                    }
-                ]
-            }
-        ]
-    }
-    sendMSTeamsMessage(msTeamsMsg)
-}
-
 
 function capitalizeFirstLetter(e){
     return e.charAt(0).toUpperCase()+ e.slice(1)
@@ -300,13 +196,18 @@ async function getSourceControlfromIQ(e){
     let url = IQ_URL+"api/v2/sourceControl/application/"+e
     let scmURL = ""
     let scmName = "Source Control"
+
+  
+    const token = `${IQ_USER}:${IQ_PASS}`;
+    const encodedToken = Buffer.from(token).toString('base64');
+    console.log(encodedToken)
     
     let config = {
         method: 'get',
         // maxBodyLength: Infinity,
         url: url,
         headers: { 
-            'Authorization': 'Basic YWRtaW46YWRtaW4hMjM='
+            'Authorization': 'Basic '+encodedToken
         }
     };
       
