@@ -33,11 +33,17 @@ app.use(express.json());
 
 /*****************/
 // ENVIRONMENT VARIABLES
-TEAMS_URL = process.env.TEAMS_URL // "https://sonatype.webhook.office.com/webhookb2/..."
-PORT = process.env.NODEPORT // 3000
-IQ_URL = process.env.IQ_URL // "http://localhost:8070/"
+const TEAMS_URL = process.env.TEAMS_URL // "https://sonatype.webhook.office.com/webhookb2/..."
+const PORT = process.env.NODEPORT // 3000
+var IQ_URL = process.env.IQ_URL   // "http://localhost:8070/"
 /*****************/
 
+
+
+// Check for trailing '/'
+if(IQ_URL[IQ_URL.length-1] != '/'){
+    IQ_URL = IQ_URL+'/'
+}
 
 /*****************/
 // RECEIVER
