@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const app = express();
 const axios = require('axios');
 const dotenv = require('dotenv')
@@ -33,13 +32,19 @@ app.use(express.json());
 
 /*****************/
 // ENVIRONMENT VARIABLES
-TEAMS_URL = process.env.TEAMS_URL // "https://sonatype.webhook.office.com/webhookb2/..."
-PORT  = process.env.NODEPORT      // 3000
-IQ_URL  = process.env.IQ_URL      // "http://localhost:8070/"
-IQ_USER = process.env.IQ_USERNAME // "admin"
-IQ_PASS = process.env.IQ_PASSWORD // "admin123"
+const TEAMS_URL = process.env.TEAMS_URL // "https://sonatype.webhook.office.com/webhookb2/..."
+const PORT  = process.env.NODEPORT      // 3000
+var IQ_URL  = process.env.IQ_URL        // "http://localhost:8070/"
+const IQ_USER = process.env.IQ_USERNAME // "admin"
+const IQ_PASS = process.env.IQ_PASSWORD // "admin123"
 /*****************/
 
+
+
+// Check for trailing '/'
+if(IQ_URL[IQ_URL.length-1] != '/'){
+    IQ_URL = IQ_URL+'/'
+}
 
 /*****************/
 // RECEIVER
@@ -209,7 +214,7 @@ async function getSourceControlfromIQ(e){
     await axios.request(config).then((response) => {
         // console.log(JSON.stringify(response.data));
         scmURL = response.data.repositoryUrl
-        console.log("SCM"+scmURL)
+        console.log("SCM: "+scmURL)
 
         scmName = "Source Control"
         if(scmURL.includes("azure")){
