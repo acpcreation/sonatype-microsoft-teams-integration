@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const app = express();
 const axios = require('axios');
 const dotenv = require('dotenv')
@@ -35,7 +34,7 @@ app.use(express.json());
 // ENVIRONMENT VARIABLES
 const TEAMS_URL = process.env.TEAMS_URL // "https://sonatype.webhook.office.com/webhookb2/..."
 const PORT = process.env.NODEPORT // 3000
-var IQ_URL = process.env.IQ_URL   // "http://localhost:8070/"
+var IQ_URL = process.env.IQ_URL   // "http://localhost:8070/""
 /*****************/
 
 
@@ -91,7 +90,7 @@ app.get('/test', function (req, res) {
 // Do this for different webhook messages
 function processIqData(e) {
     console.log(JSON.stringify(e))
-    console.log("-------------------------------")
+    // console.log("-------------------------------")
 
     // Application Evaluation (minimal data from app evaluation)
     if(e.hasOwnProperty("applicationEvaluation") && e.hasOwnProperty("policyAlerts")==false){
