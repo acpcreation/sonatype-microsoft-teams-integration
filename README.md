@@ -22,7 +22,7 @@ Sonatype WebHook Documentation: https://help.sonatype.com/iqserver/automating/iq
 1. Sign in to IQ Server with appropriate permissions
 2. Click the settings button (gear icon) in the top right of the screen
 3. Click the "+ Add a Webhook" button
-    - This node.js service we are creating will default run on *http://localhost:3000/* which is what you can use as the URL
+    - This node.js service we are creating will default run on *http://localhost:3000/msteams* which is what you can use as the URL
     - You can ignore the optional fields for now 
     - check the boxes for Application Evaluation and Violation Alert
     - Click the "Create" button
